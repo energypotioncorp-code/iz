@@ -31,13 +31,29 @@
   var PLAY_ID = "me.energypotion.iz";
   var APPSTORE_URL = "https://apps.apple.com/app/id1438003963"; // region-neutral (auto-redirects to viewer's country store)
 
-  // Campaign tag comes from ?c=... on the link you paste in each Short.
+  // Campaign tag comes from ?c=... on the link you paste in each post.
   var params = new URLSearchParams(location.search);
   var campaign = params.get("c") || "youtube_shorts";
 
   // Play Store install-referrer (shows up in Play Console > Acquisition).
+  //
+  // Source and medium follow the campaign. They used to be pinned to
+  // youtube/shorts while ?c= set only utm_campaign, so /iz/?c=tiktok reported
+  // its installs as utm_source=youtube and every channel landed in the YouTube
+  // bucket. The default campaign is still youtube_shorts and still maps to
+  // youtube/shorts, so links already in the wild are unaffected. Add a row here
+  // for each new channel; anything unmapped falls back to the campaign name
+  // with medium=social.
+  var CHANNELS = {
+    tiktok:         { source: "tiktok",    medium: "social" },
+    youtube_shorts: { source: "youtube",   medium: "shorts" },
+    instagram:      { source: "instagram", medium: "social" },
+    x:              { source: "x",         medium: "social" }
+  };
+  var ch = CHANNELS[campaign] || { source: campaign, medium: "social" };
+
   var referrer = encodeURIComponent(
-    "utm_source=youtube&utm_medium=shorts&utm_campaign=" + campaign
+    "utm_source=" + ch.source + "&utm_medium=" + ch.medium + "&utm_campaign=" + campaign
   );
   var playUrl = "https://play.google.com/store/apps/details?id=" + PLAY_ID +
                 "&referrer=" + referrer;
